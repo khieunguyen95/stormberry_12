@@ -194,6 +194,10 @@ class InsertGenerator {
         }
       }
     }
+    indexesNeedRemove = indexesNeedRemove.toSet().toList();
+    while (indexesNeedRemove.length > 0) {
+      requestFields.removeAt(indexesNeedRemove.removeLast());
+    }
 
     var constructorParameters = requestFields
         .map((f) => '${f.key.endsWith('?') ? '' : 'required '}this.${f.value},')
