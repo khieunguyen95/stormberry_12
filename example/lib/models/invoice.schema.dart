@@ -40,7 +40,7 @@ class _InvoiceRepository extends BaseRepository
     var values = QueryValues();
     await db.query(
       'INSERT INTO "invoices" ( "id", "title", "invoice_id", "account_id", "company_id" )\n'
-      'VALUES ${requests.map((r) => '( ${values.add(r.id)}:text, ${values.add(r.title)}:text, ${values.add(r.invoiceId)}:text, ${values.add(r.accountId)}:int8, ${values.add(r.companyId)}:text )').join(', ')}\n',
+      'VALUES ${requests.map((r) => '( ${values.add(r.id)}::text, ${values.add(r.title)}::text, ${values.add(r.invoiceId)}::text, ${values.add(r.accountId)}::int8, ${values.add(r.companyId)}::text )').join(', ')}\n',
       values.values,
     );
   }
@@ -52,7 +52,7 @@ class _InvoiceRepository extends BaseRepository
     await db.query(
       'UPDATE "invoices"\n'
       'SET "title" = COALESCE(UPDATED."title", "invoices"."title"), "invoice_id" = COALESCE(UPDATED."invoice_id", "invoices"."invoice_id"), "account_id" = COALESCE(UPDATED."account_id", "invoices"."account_id"), "company_id" = COALESCE(UPDATED."company_id", "invoices"."company_id")\n'
-      'FROM ( VALUES ${requests.map((r) => '( ${values.add(r.id)}:text, ${values.add(r.title)}:text, ${values.add(r.invoiceId)}:text, ${values.add(r.accountId)}:int8, ${values.add(r.companyId)}:text )').join(', ')} )\n'
+      'FROM ( VALUES ${requests.map((r) => '( ${values.add(r.id)}::text, ${values.add(r.title)}::text, ${values.add(r.invoiceId)}::text, ${values.add(r.accountId)}::int8, ${values.add(r.companyId)}::text )').join(', ')} )\n'
       'AS UPDATED("id", "title", "invoice_id", "account_id", "company_id")\n'
       'WHERE "invoices"."id" = UPDATED."id"',
       values.values,

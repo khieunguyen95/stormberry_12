@@ -32,7 +32,7 @@ class _BillingAddressRepository extends BaseRepository
     var values = QueryValues();
     await db.query(
       'INSERT INTO "billing_addresses" ( "city", "postcode", "name", "street", "account_id", "company_id" )\n'
-      'VALUES ${requests.map((r) => '( ${values.add(r.city)}:text, ${values.add(r.postcode)}:text, ${values.add(r.name)}:text, ${values.add(r.street)}:text, ${values.add(r.accountId)}:int8, ${values.add(r.companyId)}:text )').join(', ')}\n',
+      'VALUES ${requests.map((r) => '( ${values.add(r.city)}::text, ${values.add(r.postcode)}::text, ${values.add(r.name)}::text, ${values.add(r.street)}::text, ${values.add(r.accountId)}::int8, ${values.add(r.companyId)}::text )').join(', ')}\n',
       values.values,
     );
   }
@@ -44,7 +44,7 @@ class _BillingAddressRepository extends BaseRepository
     await db.query(
       'UPDATE "billing_addresses"\n'
       'SET "city" = COALESCE(UPDATED."city", "billing_addresses"."city"), "postcode" = COALESCE(UPDATED."postcode", "billing_addresses"."postcode"), "name" = COALESCE(UPDATED."name", "billing_addresses"."name"), "street" = COALESCE(UPDATED."street", "billing_addresses"."street")\n'
-      'FROM ( VALUES ${requests.map((r) => '( ${values.add(r.city)}:text, ${values.add(r.postcode)}:text, ${values.add(r.name)}:text, ${values.add(r.street)}:text, ${values.add(r.accountId)}:int8, ${values.add(r.companyId)}:text )').join(', ')} )\n'
+      'FROM ( VALUES ${requests.map((r) => '( ${values.add(r.city)}::text, ${values.add(r.postcode)}::text, ${values.add(r.name)}::text, ${values.add(r.street)}::text, ${values.add(r.accountId)}::int8, ${values.add(r.companyId)}::text )').join(', ')} )\n'
       'AS UPDATED("city", "postcode", "name", "street", "account_id", "company_id")\n'
       'WHERE "billing_addresses"."account_id" = UPDATED."account_id" AND "billing_addresses"."company_id" = UPDATED."company_id"',
       values.values,

@@ -52,7 +52,7 @@ class _CompanyRepository extends BaseRepository
     var values = QueryValues();
     await db.query(
       'INSERT INTO "companies" ( "id", "name" )\n'
-      'VALUES ${requests.map((r) => '( ${values.add(r.id)}:text, ${values.add(r.name)}:text )').join(', ')}\n',
+      'VALUES ${requests.map((r) => '( ${values.add(r.id)}::text, ${values.add(r.name)}::text )').join(', ')}\n',
       values.values,
     );
 
@@ -74,14 +74,19 @@ class _CompanyRepository extends BaseRepository
     await db.query(
       'UPDATE "companies"\n'
       'SET "name" = COALESCE(UPDATED."name", "companies"."name")\n'
-      'FROM ( VALUES ${requests.map((r) => '( ${values.add(r.id)}:text, ${values.add(r.name)}:text )').join(', ')} )\n'
+      'FROM ( VALUES ${requests.map((r) => '( ${values.add(r.id)}::text, ${values.add(r.name)}::text )').join(', ')} )\n'
       'AS UPDATED("id", "name")\n'
       'WHERE "companies"."id" = UPDATED."id"',
       values.values,
     );
-    await db.billingAddresses.updateMany(requests.where((r) => r.addresses != null).expand((r) {
+    await db.billingAddresses
+        .updateMany(requests.where((r) => r.addresses != null).expand((r) {
       return r.addresses!.map((rr) => BillingAddressUpdateRequest(
-          city: rr.city, postcode: rr.postcode, name: rr.name, street: rr.street, companyId: r.id));
+          city: rr.city,
+          postcode: rr.postcode,
+          name: rr.name,
+          street: rr.street,
+          companyId: r.id));
     }).toList());
   }
 }
@@ -110,7 +115,8 @@ class CompanyUpdateRequest {
   List<BillingAddress>? addresses;
 }
 
-class FullCompanyViewQueryable extends KeyedViewQueryable<FullCompanyView, String> {
+class FullCompanyViewQueryable
+    extends KeyedViewQueryable<FullCompanyView, String> {
   @override
   String get keyName => 'id';
 
@@ -157,10 +163,17 @@ class FullCompanyViewQueryable extends KeyedViewQueryable<FullCompanyView, Strin
   FullCompanyView decode(TypedMap map) => FullCompanyView(
       id: map.get('id'),
       name: map.get('name'),
-      addresses: map.getListOpt('addresses', BillingAddressQueryable().decoder) ?? const [],
-      members: map.getListOpt('members', CompanyAccountViewQueryable().decoder) ?? const [],
-      invoices: map.getListOpt('invoices', OwnerInvoiceViewQueryable().decoder) ?? const [],
-      parties: map.getListOpt('parties', CompanyPartyViewQueryable().decoder) ?? const []);
+      addresses:
+          map.getListOpt('addresses', BillingAddressQueryable().decoder) ??
+              const [],
+      members:
+          map.getListOpt('members', CompanyAccountViewQueryable().decoder) ??
+              const [],
+      invoices:
+          map.getListOpt('invoices', OwnerInvoiceViewQueryable().decoder) ??
+              const [],
+      parties: map.getListOpt('parties', CompanyPartyViewQueryable().decoder) ??
+          const []);
 }
 
 class FullCompanyView {
@@ -181,7 +194,8 @@ class FullCompanyView {
   final List<CompanyPartyView> parties;
 }
 
-class MemberCompanyViewQueryable extends KeyedViewQueryable<MemberCompanyView, String> {
+class MemberCompanyViewQueryable
+    extends KeyedViewQueryable<MemberCompanyView, String> {
   @override
   String get keyName => 'id';
 
@@ -206,7 +220,9 @@ class MemberCompanyViewQueryable extends KeyedViewQueryable<MemberCompanyView, S
   MemberCompanyView decode(TypedMap map) => MemberCompanyView(
       id: map.get('id'),
       name: map.get('name'),
-      addresses: map.getListOpt('addresses', BillingAddressQueryable().decoder) ?? const []);
+      addresses:
+          map.getListOpt('addresses', BillingAddressQueryable().decoder) ??
+              const []);
 }
 
 class MemberCompanyView {

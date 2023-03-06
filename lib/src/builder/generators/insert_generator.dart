@@ -91,6 +91,7 @@ class InsertGenerator {
     var insertColumns = table.columns
         .whereType<NamedColumnElement>()
         .where((c) => c is! FieldColumnElement || !c.isAutoIncrement);
+    insertColumns = insertColumns.toSet().toList();
 
     String toInsertValue(NamedColumnElement c) {
       if (c.converter != null) {
