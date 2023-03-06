@@ -87,9 +87,9 @@ class InsertGenerator {
 
     String toInsertValue(NamedColumnElement c) {
       if (c.converter != null) {
-        return '\${values.add(${c.converter!.toSource()}.tryEncode(r.${c.paramName}))}:${c.rawSqlType}';
+        return '\${values.add(${c.converter!.toSource()}.tryEncode(r.${c.paramName}))}::${c.rawSqlType}';
       } else {
-        return '\${values.add(r.${c.paramName}${c.converter != null ? ', ${c.converter!.toSource()}' : ''})}:${c.rawSqlType}';
+        return '\${values.add(r.${c.paramName}${c.converter != null ? ', ${c.converter!.toSource()}' : ''})}::${c.rawSqlType}';
       }
     }
 

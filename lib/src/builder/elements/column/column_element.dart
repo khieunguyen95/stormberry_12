@@ -26,8 +26,8 @@ abstract class RelationalColumnElement implements ColumnElement {
 
   @override
   void checkModifiers() {
-    var groupedModifiers = modifiers.groupListsBy(
-        (m) => Object.hash(m.read('name').objectValue.toSymbolValue(), m.objectValue.type));
+    var groupedModifiers = modifiers.groupListsBy((m) => Object.hash(
+        m.read('name').objectValue.toSymbolValue(), m.objectValue.type));
     if (groupedModifiers.values.any((l) => l.length > 1)) {
       var duplicated = groupedModifiers.values.where((l) => l.length > 1).first;
       throw 'Column field was annotated with duplicate view modifiers, which is not supported.\n'
@@ -41,7 +41,8 @@ abstract class LinkedColumnElement implements ColumnElement {
   TableElement get linkedTable;
 }
 
-abstract class ReferencingColumnElement implements LinkedColumnElement, ParameterColumnElement {
+abstract class ReferencingColumnElement
+    implements LinkedColumnElement, ParameterColumnElement {
   ReferencingColumnElement get referencedColumn;
   set referencedColumn(ReferencingColumnElement c);
 }
@@ -79,7 +80,8 @@ abstract class ColumnElement {
   void checkConverter();
 
   late List<ConstantReader> modifiers = () {
-    if (parameter == null || parameter!.getter == null) return <ConstantReader>[];
+    if (parameter == null || parameter!.getter == null)
+      return <ConstantReader>[];
 
     return [
       ...changedInChecker.annotationsOf(parameter!),
