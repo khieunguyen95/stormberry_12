@@ -68,17 +68,61 @@ class UpdateGenerator {
     }
 
     var hasPrimaryKey = table.primaryKeyColumn != null;
-    var setColumns = table.columns.whereType<NamedColumnElement>().where((c) =>
-        (hasPrimaryKey
-            ? c != table.primaryKeyColumn
-            : c is FieldColumnElement) &&
-        (c is! FieldColumnElement || !c.isAutoIncrement));
+    var setColumns = table.columns
+        .whereType<NamedColumnElement>()
+        .where((c) =>
+            (hasPrimaryKey
+                ? c != table.primaryKeyColumn
+                : c is FieldColumnElement) &&
+            (c is! FieldColumnElement || !c.isAutoIncrement))
+        .toList();
 
-    var updateColumns = table.columns.whereType<NamedColumnElement>().where(
-        (c) =>
+    var indexesNeedRemove = <int>[];
+    for (var i = 0; i < setColumns.length - 1; i++) {
+      var itemContain = 0;
+      var parent = setColumns[i];
+      for (var j = 1; j < setColumns.length; j++) {
+        var child = setColumns[j];
+        if (parent.columnName == child.columnName) {
+          itemContain++;
+        }
+        if (itemContain > 1) {
+          indexesNeedRemove.add(j);
+          break;
+        }
+      }
+    }
+    indexesNeedRemove = indexesNeedRemove.toSet().toList();
+    while (indexesNeedRemove.length > 0) {
+      setColumns.removeAt(indexesNeedRemove.removeLast());
+    }
+
+    var updateColumns = table.columns
+        .whereType<NamedColumnElement>()
+        .where((c) =>
             table.primaryKeyColumn == c ||
             c is! FieldColumnElement ||
-            !c.isAutoIncrement);
+            !c.isAutoIncrement)
+        .toList();
+    indexesNeedRemove = <int>[];
+    for (var i = 0; i < updateColumns.length - 1; i++) {
+      var itemContain = 0;
+      var parent = updateColumns[i];
+      for (var j = 1; j < updateColumns.length; j++) {
+        var child = updateColumns[j];
+        if (parent.columnName == child.columnName) {
+          itemContain++;
+        }
+        if (itemContain > 1) {
+          indexesNeedRemove.add(j);
+          break;
+        }
+      }
+    }
+    indexesNeedRemove = indexesNeedRemove.toSet().toList();
+    while (indexesNeedRemove.length > 0) {
+      updateColumns.removeAt(indexesNeedRemove.removeLast());
+    }
 
     String toUpdateValue(NamedColumnElement c) {
       if (c.converter != null) {
@@ -159,6 +203,22 @@ class UpdateGenerator {
         }
         requestFields
             .add(MapEntry('$fieldType$fieldNullSuffix', column.paramName));
+      }
+    }
+
+    var indexesNeedRemove = <int>[];
+    for (var i = 0; i < requestFields.length - 1; i++) {
+      var itemContain = 0;
+      var parent = requestFields[i];
+      for (var j = 1; j < requestFields.length; j++) {
+        var child = requestFields[j];
+        if (parent.value == child.value) {
+          itemContain++;
+        }
+        if (itemContain > 1) {
+          indexesNeedRemove.add(j);
+          break;
+        }
       }
     }
 

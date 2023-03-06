@@ -90,8 +90,28 @@ class InsertGenerator {
 
     var insertColumns = table.columns
         .whereType<NamedColumnElement>()
-        .where((c) => c is! FieldColumnElement || !c.isAutoIncrement);
-    insertColumns = insertColumns.toSet().toList();
+        .where((c) => c is! FieldColumnElement || !c.isAutoIncrement)
+        .toList();
+
+    var indexesNeedRemove = <int>[];
+    for (var i = 0; i < insertColumns.length - 1; i++) {
+      var itemContain = 0;
+      var parent = insertColumns[i];
+      for (var j = 1; j < insertColumns.length; j++) {
+        var child = insertColumns[j];
+        if (parent.columnName == child.columnName) {
+          itemContain++;
+        }
+        if (itemContain > 1) {
+          indexesNeedRemove.add(j);
+          break;
+        }
+      }
+    }
+    indexesNeedRemove = indexesNeedRemove.toSet().toList();
+    while (indexesNeedRemove.length > 0) {
+      insertColumns.removeAt(indexesNeedRemove.removeLast());
+    }
 
     String toInsertValue(NamedColumnElement c) {
       if (c.converter != null) {
@@ -156,6 +176,22 @@ class InsertGenerator {
         }
         requestFields
             .add(MapEntry('$fieldType$fieldNullSuffix', column.paramName));
+      }
+    }
+
+    var indexesNeedRemove = <int>[];
+    for (var i = 0; i < requestFields.length - 1; i++) {
+      var itemContain = 0;
+      var parent = requestFields[i];
+      for (var j = 1; j < requestFields.length; j++) {
+        var child = requestFields[j];
+        if (parent.value == child.value) {
+          itemContain++;
+        }
+        if (itemContain > 1) {
+          indexesNeedRemove.add(j);
+          break;
+        }
       }
     }
 
