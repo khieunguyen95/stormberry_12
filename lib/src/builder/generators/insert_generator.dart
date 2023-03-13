@@ -115,26 +115,23 @@ class InsertGenerator {
 
     String toInsertValue(NamedColumnElement c) {
       if (c.converter != null) {
-        return '\${values.add(${c.converter!.toSource()}.tryEncode(r.${c.paramName}))}::${c.rawSqlType}';
+        return '\${values.add(${c.converter!.toSource()}.tryEncode(r.${c.paramName}))}';
       } else {
-        return '\${values.add(r.${c.paramName}${c.converter != null ? ', ${c.converter!.toSource()}' : ''})}::${c.rawSqlType}';
+        return '\${values.add(r.${c.paramName}${c.converter != null ? ', ${c.converter!.toSource()}' : ''})}';
       }
     }
 
     return '''
       @override
-      Future<${keyReturnStatement != null ? 'List<int>' : 'void'}> insert(List<${table.element.name}InsertRequest> requests) async {
-        if (requests.isEmpty) return${keyReturnStatement != null ? ' []' : ''};
+      Future<PostgreSQLResult?> insert(List<${table.element.name}InsertRequest> requests) async {
+        if (requests.isEmpty) return null;
         var values = QueryValues();
-        ${autoIncrementStatement != null ? 'var rows = ' : ''}await db.query(
+        return db.query(
           'INSERT INTO "${table.tableName}" ( ${insertColumns.map((c) => '"${c.columnName}"').join(', ')} )\\n'
           'VALUES \${requests.map((r) => '( ${insertColumns.map(toInsertValue).join(', ')} )').join(', ')}\\n'
           ${autoIncrementStatement != null ? "'RETURNING \"${table.primaryKeyColumn!.columnName}\"'" : ''},
           values.values,
         );
-        ${autoIncrementStatement ?? ''}
-        ${deepInserts.isNotEmpty ? deepInserts.join() : ''}
-        ${keyReturnStatement ?? ''}
       }
     ''';
   }

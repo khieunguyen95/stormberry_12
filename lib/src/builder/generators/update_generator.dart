@@ -126,9 +126,9 @@ class UpdateGenerator {
 
     String toUpdateValue(NamedColumnElement c) {
       if (c.converter != null) {
-        return '\${values.add(${c.converter!.toSource()}.tryEncode(r.${c.paramName}))}::${c.rawSqlType}';
+        return '\${values.add(${c.converter!.toSource()}.tryEncode(r.${c.paramName}))}';
       } else {
-        return '\${values.add(r.${c.paramName})}::${c.rawSqlType}';
+        return '\${values.add(r.${c.paramName})}';
       }
     }
 
@@ -147,12 +147,12 @@ class UpdateGenerator {
 
     return '''
         @override
-        Future<void> update(List<${table.element.name}UpdateRequest> requests) async {
-          if (requests.isEmpty) return;
+        Future<PostgreSQLResult?> update(List<${table.element.name}UpdateRequest> requests) async {
+          if (requests.isEmpty) return null;
           var values = QueryValues();
-          await db.query(
+          return db.query(
             'UPDATE "${table.tableName}"\\n'
-            'SET ${setColumns.map((c) => '"${c.columnName}" = COALESCE(UPDATED."${c.columnName}", "${table.tableName}"."${c.columnName}")').join(', ')}\\n'
+            'SET ${setColumns.map((c) => '"${c.columnName}" = COALESCE(UPDATED."${c.columnName}::${c.rawSqlType}", "${table.tableName}"."${c.columnName}")').join(', ')}\\n'
             'FROM ( VALUES \${requests.map((r) => '( ${updateColumns.map(toUpdateValue).join(', ')} )').join(', ')} )\\n'
             'AS UPDATED(${updateColumns.map((c) => '"${c.columnName}"').join(', ')})\\n'
             'WHERE $whereClause',
