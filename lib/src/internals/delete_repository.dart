@@ -1,14 +1,15 @@
 import '../core/query_params.dart';
 import 'base_repository.dart';
+import 'package:postgres/postgres.dart';
 
 abstract class ModelRepositoryDelete<DeleteRequest> {
-  Future<void> deleteOne(DeleteRequest id);
-  Future<void> deleteMany(List<DeleteRequest> ids);
+  Future<PostgreSQLResult?> deleteOne(DeleteRequest id);
+  Future<PostgreSQLResult?> deleteMany(List<DeleteRequest> ids);
 }
 
 mixin RepositoryDeleteMixin<DeleteRequest> on BaseRepository
     implements ModelRepositoryDelete<DeleteRequest> {
-  Future<dynamic> delete(List<DeleteRequest> keys) async {
+  Future<PostgreSQLResult?> delete(List<DeleteRequest> keys) async {
     if (keys.isEmpty) return null;
     var values = QueryValues();
     return db.query(
@@ -19,9 +20,20 @@ mixin RepositoryDeleteMixin<DeleteRequest> on BaseRepository
   }
 
   @override
-  Future<dynamic> deleteOne(DeleteRequest key) =>
-      transaction(() => delete([key]));
+  Future<PostgreSQLResult?> deleteOne(DeleteRequest key) => transaction(() {
+        try {
+          return delete([key]);
+        } catch (e) {
+          return null;
+        }
+      });
   @override
-  Future<dynamic> deleteMany(List<DeleteRequest> keys) =>
-      transaction(() => delete(keys));
+  Future<PostgreSQLResult?> deleteMany(List<DeleteRequest> keys) =>
+      transaction(() {
+        try {
+          return delete(keys);
+        } catch (e) {
+          return null;
+        }
+      });
 }
