@@ -8,10 +8,10 @@ abstract class ModelRepositoryDelete<DeleteRequest> {
 
 mixin RepositoryDeleteMixin<DeleteRequest> on BaseRepository
     implements ModelRepositoryDelete<DeleteRequest> {
-  Future<void> delete(List<DeleteRequest> keys) async {
-    if (keys.isEmpty) return;
+  Future<dynamic> delete(List<DeleteRequest> keys) async {
+    if (keys.isEmpty) return null;
     var values = QueryValues();
-    await db.query(
+    return db.query(
       'DELETE FROM "$tableName"\n'
       'WHERE "$tableName"."$keyName" IN ( ${keys.map((k) => values.add(k)).join(', ')} )',
       values.values,
@@ -19,7 +19,9 @@ mixin RepositoryDeleteMixin<DeleteRequest> on BaseRepository
   }
 
   @override
-  Future<void> deleteOne(DeleteRequest key) => transaction(() => delete([key]));
+  Future<dynamic> deleteOne(DeleteRequest key) =>
+      transaction(() => delete([key]));
   @override
-  Future<void> deleteMany(List<DeleteRequest> keys) => transaction(() => delete(keys));
+  Future<dynamic> deleteMany(List<DeleteRequest> keys) =>
+      transaction(() => delete(keys));
 }
