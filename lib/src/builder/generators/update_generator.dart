@@ -152,7 +152,7 @@ class UpdateGenerator {
           var values = QueryValues();
           return db.query(
             'UPDATE "${table.tableName}"\\n'
-            'SET ${setColumns.map((c) => '"${c.columnName}" = COALESCE(UPDATED."${c.columnName}::${c.rawSqlType}", "${table.tableName}"."${c.columnName}")').join(', ')}\\n'
+            'SET ${setColumns.map((c) => '"${c.columnName}" = COALESCE(UPDATED."${c.columnName}"::${c.rawSqlType}, "${table.tableName}"."${c.columnName}")').join(', ')}\\n'
             'FROM ( VALUES \${requests.map((r) => '( ${updateColumns.map(toUpdateValue).join(', ')} )').join(', ')} )\\n'
             'AS UPDATED(${updateColumns.map((c) => '"${c.columnName}"').join(', ')})\\n'
             'WHERE $whereClause',
